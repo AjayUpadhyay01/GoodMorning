@@ -78,22 +78,24 @@
 <button id="muteToggle" style="position:fixed; bottom:20px; right:20px; z-index:999;">🔊</button>
 <script>
   const bgMusic = document.getElementById('bgMusic');
+  let audioUnlocked = false;
 
-  // Try muted autoplay immediately (usually allowed)
-  bgMusic.muted = true;
-  bgMusic.play();
-
-  // On first user interaction anywhere, unmute and ensure it's playing
   function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+
     bgMusic.muted = false;
-    bgMusic.play();
-    document.removeEventListener('click', unlockAudio);
-    document.removeEventListener('touchstart', unlockAudio);
+    bgMusic.play().then(() => {
+      console.log('Playing successfully');
+    }).catch((err) => {
+      console.log('Play still blocked:', err);
+    });
   }
 
-  document.addEventListener('click', unlockAudio);
-  document.addEventListener('touchstart', unlockAudio);
-</script>
+  // Use touchend, not touchstart — more reliable trigger on iOS
+  document.addEventListener('touchend', unlockAudio, { once: true });
+  document.addEventListener('click', unlockAudio, { once: true });
+</script>    
 <script>
   document.getElementById('muteToggle').addEventListener('click', () => {
     bgMusic.muted = !bgMusic.muted;
